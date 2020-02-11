@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  university: one
+  location: MyString
+  name: MyString
+  location: MyString
+  max_days_undergrad: 1
+  max_days_grad: 1
+  max_days_phd: 1
+
+two:
+  university: two
+  location: MyString
+  name: MyString
+  location: MyString
+  max_days_undergrad: 1
+  max_days_grad: 1
+  max_days_phd: 1

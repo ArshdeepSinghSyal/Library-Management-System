@@ -1,0 +1,77 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>University:</strong>
+  <%= University.find(@library.university_id).name %>
+</p>
+
+<p>
+  <strong>Location:</strong>
+  <%= @library.location %>
+</p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @library.name %>
+</p>
+
+<p>
+  <strong>Location:</strong>
+  <%= @library.location %>
+</p>
+
+<p>
+  <strong>Max number of days a book can be issued without fines:</strong>
+  <%= @library.max_days %>
+</p>
+
+<p>
+  <strong>Fine per day:</strong>
+  <%= @library.fine %>
+</p>
+
+<%
+  @total_fines = 0
+  @library.lib_books.each do |lib_book|
+    lib_book.reservations.each do |reservation|
+      if reservation.status == 0 || reservation.status == 1
+        total_days = (reservation.status == 1) ?
+                         (Date.parse(Time.now.to_s) - Date.parse(reservation.checkoutstamp.to_s)).to_i
+                         : (Date.parse(reservation.returnstamp.to_s) - Date.parse(reservation.checkoutstamp.to_s)).to_i
+        extra_days = 0
+        allowed_days = @library.max_days
+        if total_days > allowed_days
+          extra_days = total_days - allowed_days
+        end
+        if current_user.usertype == "admin" || current_user.usertype == "librarian"
+          @total_fines += (extra_days * @library.fine)
+        else
+          if reservation.user_id.eql? current_user.id
+            @total_fines += (extra_days * @library.fine)
+          end
+        end
+      end
+    end
+  end
+%>
+
+<p>
+  <strong>Total fine to date:</strong>
+  <%= @total_fines %>
+</p>
+<%= link_to 'My Library Books', university_library_lib_books_url(@university, @library) %> |
+<%= link_to 'All Reservations', university_library_reservations_url(@university, @library, :category=>"all") %> |
+<%= link_to 'Current Reservations', university_library_reservations_url(@university, @library, :category=>"current") %> |
+<%= link_to 'Overdue Reservations', university_library_reservations_url(@university, @library, :category=>"overdue") %> |
+<% if (current_user.usertype == "librarian" && current_user.library_id == @library.id) || current_user.usertype == "admin" %>
+  <%= link_to 'Approvals', university_library_reservations_url(@university, @library, :category=>"requested") %> |
+<% elsif current_user.usertype == "studentG" || current_user.usertype == "studentUG" || current_user.usertype == "studentPhD"%>
+  <%= link_to 'Requested', university_library_reservations_url(@university, @library, :category=>"requested") %> |
+<% end %>
+<% if current_user.usertype == "studentG" || current_user.usertype == "studentUG" || current_user.usertype == "studentPhD" %>
+  <%= link_to 'My Bookmarks', university_library_bookmarks_url(@university, @library) %> |
+<% end %>
+<% if (current_user.usertype == "librarian" && current_user.library_id == @library.id) || current_user.usertype == "admin" %>
+  <%= link_to 'Edit', edit_university_library_path(@university, @library) %> |
+<% end %>
+<%= link_to 'Back', university_libraries_path %>
